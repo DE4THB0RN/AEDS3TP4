@@ -6,6 +6,7 @@ import java.text.NumberFormat;
 
 public class Livro implements Registro {
 
+  private String chave = "CIFER";
   private int ID;
   private String isbn;
   private String titulo;
@@ -25,7 +26,7 @@ public class Livro implements Registro {
     this.isbn = i;
     this.titulo = t;
     this.preco = p;
-    cripto = new Criptografar("chavoso");
+    cripto = new Criptografar(chave);
   }
 
   public int getID() {
