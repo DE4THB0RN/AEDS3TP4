@@ -1,147 +1,112 @@
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.Comparator;
 
 public class Criptografar {
 
-    private HashMap<Character, Integer> transpoe = new HashMap<Character, Integer>();
-    private HashMap<Character, Integer> destranspoe = new HashMap<Character, Integer>();
     private String chave;
 
     public Criptografar(String chave) {
         this.chave = chave;
-        preencheTranspoe(chave);
-        destranspoe = transpoe;
+
     }
 
     public byte[] criptografar(byte[] escrita) {
-        byte[] resposta = new byte[escrita.length];
+        
+        byte[] resposta = transposicao(escrita);
 
-        resposta = vigenere(escrita);
+        resposta = vigenere(resposta);
 
-        resposta = transposicao(resposta);
+        return resposta;
+    }
+
+    public byte[] descriptografar(byte[] cifra) {
+
+        byte[] resposta = descriptografarVigenere(cifra);
+
+        resposta = descriptografarTransposicao(resposta);
 
         return resposta;
     }
 
     private byte[] vigenere(byte[] palavra) {
+
         byte[] resposta = new byte[palavra.length];
-        int j = 0;
-        byte b;
+        int tamanho_chave = chave.length();
+
         for (int i = 0; i < palavra.length; i++) {
-            b = (byte) chave.charAt(j);
-            resposta[i] = (byte) ((palavra[i] + b) % 256);
-            j = j == chave.length() - 1 ? 0 : j + 1;
+            int index = i % tamanho_chave;
+            byte by = (byte) chave.charAt(index);
+            resposta[i] = (byte) ((palavra[i] + by) % 256);
+        }
+
+        return resposta;
+    }
+
+    private byte[] descriptografarVigenere(byte[] cifra) {
+        byte[] resposta = new byte[cifra.length];
+        int tamanho_chave = chave.length();
+
+        for (int i = 0; i < cifra.length; i++) {
+            int index = i % tamanho_chave;
+            byte by = (byte) chave.charAt(index);
+            resposta[i] = (byte) ((cifra[i] - by + 256) % 256);
         }
 
         return resposta;
     }
 
     private byte[] transposicao(byte[] palavra) {
-
-        int coluna = chave.length();
-        int linha = (int) Math.ceil((double) palavra.length / coluna);
         byte[] resposta = new byte[palavra.length];
-        byte[][] matriz = new byte[linha][coluna];
 
-        for (int i = 0, k = 0; i < linha; i++) {
-            for (int j = 0; j < coluna;) {
-                if (k < palavra.length) {
-                    byte b = palavra[k];
-                    matriz[i][j] = b;
-                    j++;
-                    k++;
-                } else {
-                    matriz[i][j] = '_';
-                    j++;
-                }
+        int numcoluna = chave.length();
+        int numlinha = (int) Math.ceil((double) palavra.length / numcoluna); 
+        Integer[] ordena_chave = new Integer[chave.length()];
+        int aux = 0,pos;
+
+        for(int i = 0; i < ordena_chave.length; i++){
+            ordena_chave[i] = i;
+        }
+
+        Arrays.sort(ordena_chave,Comparator.comparing(i -> chave.charAt(i)));
+
+        for(int i = 0, k = 0; i < numcoluna; i++){
+
+            aux = ordena_chave[i];
+            for(int j = 0; j < numlinha; j++){
+
+                pos = j * numcoluna + aux;
+                if(pos < resposta.length) resposta[k++] = palavra[pos];
+
             }
         }
-        int ar = 0;
-        for (Map.Entry<Character, Integer> entrada : transpoe.entrySet()) {
-            int colunaIndex = entrada.getValue();
-
-            for (int i = 0; i < linha; i++) {
-                if (matriz[i][colunaIndex] != '_') {
-                    resposta[ar] = matriz[i][colunaIndex];
-                }
-                ar++;
-            }
-        }
-
-        return resposta;
-
-    }
-
-    private void preencheTranspoe(String chave) {
-        for (int i = 0; i < chave.length(); i++) {
-            transpoe.put(chave.charAt(i), i);
-        }
-    }
-
-    public byte[] descriptografar(byte[] cifra) {
-
-        byte[] resposta = new byte[cifra.length];
-
-        resposta = descriptografarTransposicao(cifra);
-
-        resposta = descriptografarVigenere(resposta);
 
         return resposta;
     }
 
     private byte[] descriptografarTransposicao(byte[] cifra) {
-        int coluna = chave.length();
-        int linha = (int) Math.ceil((double) cifra.length / coluna);
         byte[] resposta = new byte[cifra.length];
-        byte[][] matriz = new byte[linha][coluna];
-        byte b;
 
-        for (int i = 0, k = 0; i < coluna; i++) {
-            for (int j = 0; j < linha; j++) {
+        int numcoluna = chave.length();
+        int numlinha = (int) Math.ceil((double) cifra.length / numcoluna);
 
-                b = cifra[k];
-                matriz[i][j] = b;
-                k++;
+        Integer[] ordena_chave = new Integer[chave.length()];
+        int aux = 0,pos;
+
+        for(int i = 0; i < ordena_chave.length; i++){
+            ordena_chave[i] = i;
+        }
+
+        Arrays.sort(ordena_chave,Comparator.comparing(i -> chave.charAt(i)));
+
+        for(int i = 0, k = 0; i < numcoluna; i++){
+
+            aux = ordena_chave[i];
+            for(int j = 0; j < numlinha; j++){
+
+                pos = j * numcoluna + aux;
+                if(pos < resposta.length) resposta[pos] = cifra[k++];
 
             }
-        }
-
-        int index = 0;
-        for(Map.Entry<Character,Integer> entry : destranspoe.entrySet()){
-            entry.setValue(index++);
-        }
-
-        byte[][] descifrar = new byte[linha][coluna];
-        int indexColuna;
-        for(int l = 0; l < chave.length(); l++){
-            indexColuna = destranspoe.get(chave.charAt(l));
-            for(int i = 0; i < linha; i++){
-                descifrar[i][l] = matriz[i][indexColuna];
-            }
-        }
-
-        for(int i = 0, o = 0; i < linha; i++){
-            for(int j = 0; j < coluna; j++){
-                if(descifrar[i][j] != '_'){
-                    b = descifrar[i][j];
-                    resposta[o] = b; 
-                    o++;
-                }
-            }
-        }
-
-        return resposta;
-
-    }
-
-    private byte[] descriptografarVigenere(byte[] cifra) {
-        byte[] resposta = new byte[cifra.length];
-        int j = 0;
-        byte b;
-        for (int i = 0; i < cifra.length; i++) {
-            b = (byte) chave.charAt(j);
-            resposta[i] = (byte) ((cifra[i] - b) % 256);
-            j = j == chave.length() - 1 ? 0 : j + 1;
         }
 
         return resposta;

@@ -10,6 +10,7 @@ public class Livro implements Registro {
   private String isbn;
   private String titulo;
   private float preco;
+  Criptografar cripto;
 
   public Livro() {
     this(-1, "", "", 0F);
@@ -24,6 +25,7 @@ public class Livro implements Registro {
     this.isbn = i;
     this.titulo = t;
     this.preco = p;
+    cripto = new Criptografar("chavoso");
   }
 
   public int getID() {
@@ -62,14 +64,16 @@ public class Livro implements Registro {
     ByteArrayOutputStream ba_out = new ByteArrayOutputStream();
     DataOutputStream dos = new DataOutputStream(ba_out);
     dos.writeInt(this.ID);
-    dos.writeUTF(this.isbn);
+    dos.writeUTF(isbn);
     dos.writeUTF(this.titulo);
     dos.writeFloat(this.preco);
-    return ba_out.toByteArray();
+    byte ba_c[] = cripto.criptografar(ba_out.toByteArray());
+    return ba_c;
   }
 
   public void fromByteArray(byte[] ba) throws Exception {
-    ByteArrayInputStream ba_in = new ByteArrayInputStream(ba);
+    byte[] ba_d = cripto.descriptografar(ba);
+    ByteArrayInputStream ba_in = new ByteArrayInputStream(ba_d);
     DataInputStream dis = new DataInputStream(ba_in);
     this.ID = dis.readInt();
     this.isbn = dis.readUTF();

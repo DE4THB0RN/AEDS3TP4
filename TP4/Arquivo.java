@@ -16,7 +16,6 @@ public class Arquivo<T extends Registro> {
   protected String nomeArquivo = "";
   protected Constructor<T> construtor;
   final protected int TAM_CABECALHO = 4;
-  private Criptografar cripo;
 
   public Arquivo(String na, Constructor<T> c) throws Exception {
     this.nomeArquivo = na;
@@ -26,7 +25,6 @@ public class Arquivo<T extends Registro> {
       arquivo.seek(0);
       arquivo.writeInt(0);
     }
-    cripo = new Criptografar("chavoso");
   }
 
   public int create(T obj) throws Exception {
@@ -37,7 +35,6 @@ public class Arquivo<T extends Registro> {
     arquivo.writeInt(ultimoID);
     obj.setID(ultimoID);
     byte[] ba = obj.toByteArray();
-    ba = cripo.criptografar(ba);
     short tam = (short) ba.length;
     short tam_atual;
     long end_item, end_melhor = 0;
@@ -93,7 +90,6 @@ public class Arquivo<T extends Registro> {
     arquivo.writeInt(ultimoID);
     obj.setID(ultimoID);
     byte[] ba = obj.toByteArray();
-    ba = cripo.criptografar(ba);
     short tam = (short) ba.length;
     short tam_atual;
     long end_item, end_melhor = 0;
@@ -156,7 +152,6 @@ public class Arquivo<T extends Registro> {
       if (lapide != '*') {
         ba = new byte[tam];
         arquivo.read(ba);
-        ba = cripo.descriptografar(ba);
         obj.fromByteArray(ba);
         if (obj.getID() == id)
           return obj;
@@ -180,7 +175,6 @@ public class Arquivo<T extends Registro> {
       if (lapide != '*') {
         ba = new byte[tam];
         arquivo.read(ba);
-        ba = cripo.descriptografar(ba);
         obj.fromByteArray(ba);
         if (obj.getID() == id)
           return obj;
@@ -277,13 +271,11 @@ public class Arquivo<T extends Registro> {
 
         ba = new byte[tam];
         arquivo.read(ba);
-        ba = cripo.descriptografar(ba);
         obj.fromByteArray(ba);
 
         if (obj.getID() == novoObj.getID()) {
 
           ba2 = novoObj.toByteArray();
-          ba2 = cripo.criptografar(ba2);
           tam2 = (short) ba2.length;
 
           if (tam2 <= tam) {
@@ -368,13 +360,11 @@ public class Arquivo<T extends Registro> {
 
         ba = new byte[tam];
         arquivo.read(ba);
-        ba = cripo.descriptografar(ba);
         obj.fromByteArray(ba);
 
         if (obj.getID() == novoObj.getID()) {
 
           ba2 = novoObj.toByteArray();
-          ba2 = cripo.criptografar(ba2);
           tam2 = (short) ba2.length;
 
           if (tam2 <= tam) {
